@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Glenn's Barbershop · Book an appointment</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:#f4efe8;color:#1d1b18}
+  header{padding:28px 16px 8px;text-align:center}
+  h1{margin:0;font-size:26px}
+  header p{margin:6px 0 0;color:#6b645a}
+  .card{width:480px;margin:16px auto;background:#fff;border-radius:16px;padding:22px;box-shadow:0 2px 12px rgba(0,0,0,.08)}
+  label{display:block;font-size:13px;color:#6b645a;margin:12px 0 4px}
+  input,select{width:100%;padding:10px 12px;border:1px solid #d9d2c7;border-radius:10px;font-size:16px}
+  .err{color:#b3261e;font-size:13px;min-height:16px}
+  button{margin-top:18px;width:100%;padding:12px;border:0;border-radius:12px;background:#1d1b18;color:#fff;font-size:16px;cursor:pointer}
+  #msg{margin-top:14px;font-size:15px}
+  #msg.ok{color:#1e6b34}
+  #msg.bad{color:#b3261e}
+  footer{text-align:center;color:#8a8379;font-size:13px;padding:8px 16px 28px}
+</style>
+</head>
+<body>
+<header><h1>Glenn's Barbershop</h1><p>Open 9:00–17:00 · Walk-ins welcome, appointments preferred</p></header>
+<main class="card">
+  <form id="f" novalidate>
+    <label for="name">Your name</label><input id="name" autocomplete="name"><div class="err" id="e-name"></div>
+    <label for="phone">Phone</label><input id="phone" type="tel" autocomplete="tel" placeholder="408-555-0123"><div class="err" id="e-phone"></div>
+    <label for="service">Service</label>
+    <select id="service">
+      <option value="">Choose…</option>
+      <option value="haircut">Haircut – $30</option>
+      <option value="beard">Beard trim – $15</option>
+      <option value="haircut+beard">Haircut + beard – $40</option>
+    </select><div class="err" id="e-service"></div>
+    <label for="date">Date</label><input id="date" type="date"><div class="err" id="e-date"></div>
+    <label for="slot">Time</label><select id="slot"></select><div class="err" id="e-slot"></div>
+    <label for="tip">Tip (optional, $)</label><input id="tip" inputmode="decimal" placeholder="0">
+    <button type="button" id="book">Book appointment</button>
+    <div id="msg" role="status"></div>
+  </form>
+</main>
+<footer>Demo site for testing Sentinel Fixer.</footer>
+<script src="booking.js"></script>
+<script>
+(function () {
+  var bookings = {}; // date -> list of booked slots (kept in memory for this demo)
+  var $ = function (id) { return document.getElementById(id); };
+
+  function refreshSlots() {
+    var booked = bookings[$('date').value] || [];
+    var slots = Booking.availableSlots(booked);
+    $('slot').innerHTML = '';
+    slots.forEach(function (s) {
+      var o = document.createElement('option'); o.value = s; o.textContent = s; $('slot').appendChild(o);
+    });
+  }
+  $('date').addEventListener('change', refreshSlots);
+  refreshSlots();
+
+  $('book').addEventListener('click', function () {
+    var form = { name: $('name').value, phone: $('phone').value, service: $('service').value,
+                 date: $('date').value, slot: $('slot').value, tip: $('tip').value };
+    var booked = bookings[form.date] || (bookings[form.date] = []);
+    var res = Booking.submitBookin(form, booked, new Date());
+    ['name', 'phone', 'service', 'date', 'slot'].forEach(function (k) { $('e-' + k).textContent = res.errors[k] || ''; });
+    $('msg').className = res.ok ? 'ok' : 'bad';
+    $('msg').textContent = res.ok ? res.message + ' Total: $' + res.total.toFixed(2) : res.message;
+    if (res.ok) refreshSlots();
+  });
+})();
+</script>
+</body>
+</html>
