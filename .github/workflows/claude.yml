@@ -1,0 +1,27 @@
+# Lets the Claude Code agent work on issues you open yourself. Needs the Claude GitHub App installed on this repo
+# and an ANTHROPIC_API_KEY secret (Settings > Secrets and variables > Actions).
+name: Claude Code
+on:
+  issues:
+    types: [opened]
+  issue_comment:
+    types: [created]
+
+jobs:
+  claude:
+    # Only issues opened by the repo owner can start the agent, so nobody else can spend your API money.
+    if: |
+      github.actor == github.repository_owner &&
+      (contains(github.event.issue.body, '@claude') || contains(github.event.comment.body, '@claude'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          
