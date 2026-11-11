@@ -63,7 +63,7 @@
     var form = { name: $('name').value, phone: $('phone').value, service: $('service').value,
                  date: $('date').value, slot: $('slot').value, tip: $('tip').value };
     var booked = bookings[form.date] || (bookings[form.date] = []);
-    var res = Booking.submitBookin(form, booked, new Date());
+    var res = Booking.submitBooking(form, booked, new Date());
     ['name', 'phone', 'service', 'date', 'slot'].forEach(function (k) { $('e-' + k).textContent = res.errors[k] || ''; });
     $('msg').className = res.ok ? 'ok' : 'bad';
     $('msg').textContent = res.ok ? res.message + ' Total: $' + res.total.toFixed(2) : res.message;

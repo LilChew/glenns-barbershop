@@ -38,6 +38,17 @@ test('confirmation message uses the customer name', () => {
   assert.ok(!msg.includes('undefined'), msg);
 });
 
+test('index.html only calls Booking functions that booking.js exports', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const used = [...html.matchAll(/\bBooking\.([A-Za-z_$][\w$]*)/g)].map((m) => m[1]);
+  assert.ok(used.includes('submitBooking'), 'the Book button should call Booking.submitBooking');
+  for (const name of used) {
+    assert.strictEqual(typeof B[name], 'function', `index.html calls Booking.${name}, which booking.js does not export`);
+  }
+});
+
 test('submitBooking books a valid slot once and rejects a double booking', () => {
   const now = new Date(2026, 2, 10, 9, 0);
   const booked = [];
